@@ -1,0 +1,20 @@
+body {
+  font-family: sans-serif;
+}
+
+.segments polygon {
+  shape-rendering: geometricPrecision;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #727272;
+  shape-rendering: crispEdges;
+  stroke-width: .2;
+}
+
+.axis text {
+  font-size: 11px;
+  fill: #727272;
+}
