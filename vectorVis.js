@@ -1,17 +1,3 @@
-// applicants admitted
-//Men	  8442	44%
-//Women	4321	35%
-
-
-//Department	Men	Women
-//Applicants	Admitted	Applicants	Admitted
-//A	825	62%	108	82%
-//B	560	63%	25	68%
-//C	325	37%	593	34%
-//D	417	33%	375	35%
-//E	191	28%	393	24%
-//F	272	6%	341	7%
-
 document.addEventListener("DOMContentLoaded", function(event) {
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
       width = 960 - margin.left - margin.right,
@@ -39,14 +25,15 @@ document.addEventListener("DOMContentLoaded", function(event) {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  d3.tsv("data.tsv", function(error, data) {
-    data.forEach(function(d) {
-      d.sepalLength = +d.sepalLength;
-      d.sepalWidth = +d.sepalWidth;
-    });
+  d3.csv("students.csv", function(error, data) {
+    //data.forEach(function(d) {
+    //  d.sepalLength = +d.sepalLength;
+    //  d.sepalWidth = +d.sepalWidth;
+    //});
 
-    x.domain(d3.extent(data, function(d) { return d.sepalWidth; })).nice();
-    y.domain(d3.extent(data, function(d) { return d.sepalLength; })).nice();
+    console.log(data);
+    x.domain(d3.extent(data, function(d) { return d.applicants; })).nice();
+    y.domain(d3.extent(data, function(d) { return d.admitted; })).nice();
 
     svg.append("g")
         .attr("class", "x axis")
@@ -57,7 +44,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         .attr("x", width)
         .attr("y", -6)
         .style("text-anchor", "end")
-        .text("Sepal Width (cm)");
+        .text("Applicants");
 
     svg.append("g")
         .attr("class", "y axis")
@@ -68,16 +55,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
         .attr("y", 6)
         .attr("dy", ".71em")
         .style("text-anchor", "end")
-        .text("Sepal Length (cm)");
+        .text("Admitted (%)");
 
     svg.selectAll(".dot")
         .data(data)
         .enter().append("circle")
         .attr("class", "dot")
         .attr("r", 3.5)
-        .attr("cx", function(d) { return x(d.sepalWidth); })
-        .attr("cy", function(d) { return y(d.sepalLength); })
-        .style("fill", function(d) { return color(d.species); });
+        .attr("cx", function(d) { return x(d.applicants); })
+        .attr("cy", function(d) { return y(d.admitted); })
+        .style("fill", function(d) { return color(d.department); });
 
     var legend = svg.selectAll(".legend")
         .data(color.domain())
