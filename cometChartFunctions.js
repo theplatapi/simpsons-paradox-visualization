@@ -1,15 +1,15 @@
 // graph elements
-function addAxis(element, scale, location) {
+function addAxis(element, scale, location, margin, height) {
   var axis = d3.svg.axis().scale(scale).orient(location)
       .ticks(10, ",.1s");
 
   element.append("g").attr("class", "axis")
-      .attr("transform", placeAxis(location))
+      .attr("transform", placeAxis(location, margin, height))
       .call(axis);
 
 }
 
-function placeAxis(location) {
+function placeAxis(location, margin, height) {
   if (location == 'bottom') {
     return "translate(" + margin.left + "," + (height) + ")";
   } else if (location == 'left') {
@@ -17,7 +17,7 @@ function placeAxis(location) {
   }
 }
 
-function applyData(data) {
+function applyData(data, segmentName, width, height) {
   // initialize counter variables
   var maxValue = 0, maxWeight = 0, diff = 0, sizeSum = [0, 0], comboSum = [0, 0];
 
@@ -68,7 +68,7 @@ function applyData(data) {
 }
 
 // data to polygons
-function valuesToPoints(startweight, endweight, startvalue, endvalue, halfWidth) {
+function valuesToPoints(startweight, endweight, startvalue, endvalue, halfWidth, filterName, segmentName) {
   var points = [[startweight, startvalue]];
   var a = startweight - endweight;
   var b = startvalue - endvalue;
@@ -80,7 +80,7 @@ function valuesToPoints(startweight, endweight, startvalue, endvalue, halfWidth)
 }
 
 // function to draw comets
-function drawComets(element, data, scales) {
+function drawComets(element, data, scales, filterName, segmentName) {
   element.selectAll("polygon")
       .data(data)
       .enter()
@@ -90,7 +90,7 @@ function drawComets(element, data, scales) {
             scales.size(+d.endweight),
             scales.value(+d.startvalue),
             scales.value(+d.endvalue),
-            3);
+            3, filterName, segmentName);
       })
       .attr("fill", function(d) {
         if (d[segmentName] == 'aggregate') {
