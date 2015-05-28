@@ -3,11 +3,9 @@ var margin = {
       right: 100,
       bottom: 50,
       left: 100
-    },
-    width = 500,
-    height = 400;
-
-var formatAsNumber = d3.format(",.0f");
+    };
+var width = 500;
+var height = 400;
 
 var filterName = 'state', segmentName = 'birthweight';
 
@@ -32,14 +30,12 @@ d3.csv("output2.csv", function(error, data) {
    return d[filterName] == 'Ohio';
    });
    */
-  // set scales
+
   var scales = applyData(data);
 
-  // add the comets
+
   drawComets(segments, data, scales);
 
-  // adding x axis, and y axis
   addAxis(segments, scales.size, 'bottom');
   addAxis(segments, scales.value, 'left')
-
 });

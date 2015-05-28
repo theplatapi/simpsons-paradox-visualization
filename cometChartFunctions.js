@@ -1,8 +1,7 @@
 // graph elements
 function addAxis(element, scale, location) {
   var axis = d3.svg.axis().scale(scale).orient(location)
-      .ticks(15, ",.1s")
-      .tickSize(3, 0);
+      .ticks(10, ",.1s");
 
   element.append("g").attr("class", "axis")
       .attr("transform", placeAxis(location))
@@ -62,7 +61,7 @@ function applyData(data) {
   // color scale, based on data diffs
   var colorScale = d3.scale.linear()
       .domain([-diff, 0, diff])
-      .range(['orange', 'grey', 'blue'])
+      .range(['orange', 'grey', 'blue']);
 
   return {size: sizeScale, value: valueScale, color: colorScale}
 
