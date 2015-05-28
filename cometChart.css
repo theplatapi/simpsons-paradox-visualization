@@ -14,3 +14,9 @@
   font-size: 11px;
   fill: #727272;
 }
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
