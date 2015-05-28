@@ -68,7 +68,7 @@ function applyData(data, segmentName, width, height) {
 }
 
 // data to polygons
-function valuesToPoints(startweight, endweight, startvalue, endvalue, halfWidth, filterName, segmentName) {
+function valuesToPoints(startweight, endweight, startvalue, endvalue, halfWidth) {
   var points = [[startweight, startvalue]];
   var a = startweight - endweight;
   var b = startvalue - endvalue;
@@ -90,7 +90,7 @@ function drawComets(element, data, scales, filterName, segmentName) {
             scales.size(+d.endweight),
             scales.value(+d.startvalue),
             scales.value(+d.endvalue),
-            3, filterName, segmentName);
+            3);
       })
       .attr("fill", function(d) {
         if (d[segmentName] == 'aggregate') {
