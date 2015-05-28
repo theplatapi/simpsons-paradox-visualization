@@ -7,7 +7,8 @@ var margin = {
 var width = 500;
 var height = 400;
 
-var filterName = 'state', segmentName = 'birthweight';
+var filterName = 'state';
+var segmentName = 'birthweight';
 
 // introduce svg element
 var svg = d3.select("#chart")
@@ -21,7 +22,6 @@ var segments = svg.append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .attr("class", "segments");
 
-// call and use data
 d3.csv("output2.csv", function(error, data) {
   if (error) return console.error('error');
 
