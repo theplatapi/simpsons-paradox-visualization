@@ -69,7 +69,7 @@ function applyData(data) {
 
 // data to polygons
 function valuesToPoints(startweight, endweight, startvalue, endvalue, halfWidth) {
-  points = [[startweight, startvalue]];
+  var points = [[startweight, startvalue]];
   var a = startweight - endweight;
   var b = startvalue - endvalue;
   var dist = Math.sqrt(a * a + b * b);
@@ -94,7 +94,6 @@ function drawComets(element, data, scales) {
       })
       .attr("fill", function(d) {
         if (d[segmentName] == 'aggregate') {
-          //
           return 'black';
         } else {
           return scales.color(d.weightDiff)
@@ -102,14 +101,14 @@ function drawComets(element, data, scales) {
       })
       .append("title")
       .text(function(d) {
-        return d[filterName] +
-            ', ' + segmentName +
+        return d[filterName] + '; ' +
+            segmentName + ': ' +
             d[segmentName] +
-            ', value: ' +
+            '; value: ' +
             d.startvalue + ', ' +
             d.endvalue +
-            ' weights ' +
-            d.startweight + ' ' +
+            '; weights: ' +
+            d.startweight + ', ' +
             d.endweight;
       });
 
