@@ -7,11 +7,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
   };
   var width = 500;
   var height = 400;
-
-  var filterName = 'state';
   var segmentName = 'birthweight';
+  var filterName = 'state';
 
-// introduce svg element
   var svg = d3.select("#chart")
       .append("svg")
       .attr('width', width + margin.right + margin.left)
@@ -23,20 +21,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
       .attr("class", "segments");
 
-  d3.csv("output2.csv", function(error, data) {
-    if (error) return console.error('error');
-
-    // filter by state, if desired
-    //data = data.filter(function(d) {
-    //  return d[filterName] == 'Ohio';
-    //});
-
-
+  d3.csv("output2.csv", function(err, data) {
     var scales = applyData(data, segmentName, width, height);
 
-
     drawComets(segments, data, scales, filterName, segmentName);
-
     addAxis(segments, scales.size, 'bottom', margin, height);
     addAxis(segments, scales.value, 'left', margin, height)
   });

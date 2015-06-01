@@ -1,4 +1,3 @@
-// graph elements
 function addAxis(element, scale, location, margin, height) {
   var axis = d3.svg.axis().scale(scale).orient(location)
       .ticks(10, ",.1s");
@@ -6,7 +5,6 @@ function addAxis(element, scale, location, margin, height) {
   element.append("g").attr("class", "axis")
       .attr("transform", placeAxis(location, margin, height))
       .call(axis);
-
 }
 
 function placeAxis(location, margin, height) {
