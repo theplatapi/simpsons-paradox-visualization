@@ -26,14 +26,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   d3.csv("students.csv", function(error, data) {
-    //data.forEach(function(d) {
-    //  d.sepalLength = +d.sepalLength;
-    //  d.sepalWidth = +d.sepalWidth;
-    //});
-
-    console.log(data);
-    x.domain(d3.extent(data, function(d) { return d.applicants; })).nice();
-    y.domain(d3.extent(data, function(d) { return d.admitted; })).nice();
+    //x.domain(d3.extent(data, function(d) { return +d.applicants; })).nice();
+    //y.domain(d3.extent(data, function(d) { return +d.admitted; })).nice();
+    x.domain([0, 9000]);
+    y.domain([0, 100]);
 
     svg.append("g")
         .attr("class", "x axis")
