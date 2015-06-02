@@ -1,0 +1,21 @@
+{
+  "name": "simpsons",
+  "version": "0.0.0",
+  "authors": [
+    "Allen Korenevsky <akorenev@calpoly.edu>"
+  ],
+  "description": "Visualizing Simpson's Paradox",
+  "main": "index.html",
+  "keywords": [
+    "Simpson",
+    "Paradox"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
