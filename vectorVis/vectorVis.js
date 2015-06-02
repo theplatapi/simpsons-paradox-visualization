@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function(event) {
+$(function() {
   var margin = {top: 20, right: 20, bottom: 30, left: 40},
       width = 960 - margin.left - margin.right,
       height = 500 - margin.top - margin.bottom;
@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  d3.csv("students.csv", function(error, data) {
+  d3.csv("data/students.csv", function(error, data) {
     //x.domain(d3.extent(data, function(d) { return +d.applicants; })).nice();
     //y.domain(d3.extent(data, function(d) { return +d.admitted; })).nice();
     x.domain([0, 9000]);
