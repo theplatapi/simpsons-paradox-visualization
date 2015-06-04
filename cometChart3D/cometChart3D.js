@@ -135,9 +135,7 @@ $(function() {
       console.log(err);
       return;
     }
-    //plot the points, normalized on 2, 2, 2 scale
-    //x.domain(d3.extent(data, function(d) { return +d.applicants; })).nice();
-    //y.domain(d3.extent(data, function(d) { return +d.admitted; })).nice();
+
     var x = d3.scale.linear()
         .domain(d3.extent(data, function(d) { return +d.startvalue; }));
 
