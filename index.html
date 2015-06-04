@@ -71,6 +71,44 @@ void main() {
 }
   </script>
 
+  <script id="point-vs" type="notjs">
+uniform mat4 u_worldViewProjection;
+uniform vec3 u_lightWorldPos;
+uniform mat4 u_world;
+uniform mat4 u_viewInverse;
+uniform mat4 u_worldInverseTranspose;
+
+attribute vec3 a_position;
+
+varying vec3 v_surfaceToLight;
+varying vec3 v_surfaceToView;
+
+void main() {
+  vec4 position = vec4(a_position, 1);
+
+  v_surfaceToLight = u_lightWorldPos - (u_world * position).xyz;
+  v_surfaceToView = (u_viewInverse[3] - (u_world * position)).xyz;
+  gl_PointSize = 5.0;
+  gl_Position = (u_worldViewProjection * position);
+}
+  </script>
+  <script id="point-fs" type="notjs">
+precision mediump float;
+
+varying vec3 v_surfaceToLight;
+varying vec3 v_surfaceToView;
+
+uniform vec4 u_lightColor;
+uniform vec4 u_ambient;
+uniform vec4 u_specular;
+uniform float u_shininess;
+uniform float u_specularFactor;
+
+void main() {
+  gl_FragColor = vec4(1, 0, 0, 1);
+}
+  </script>
+
   <script src="cometChart/cometChartFunctions.js"></script>
   <script src="cometChart/cometChart.js"></script>
   <script src="cometChart3D/cometChart3D.js"></script>
@@ -79,18 +117,15 @@ void main() {
 </head>
 <body>
 <h1>Comet Chart</h1>
-
 <div id="chart"></div>
-
-<h1>Vector Visualization</h1>
-
-<div id="vectorVis"></div>
-
-<h1>Vector Visualization Components</h1>
-
-<div id="vectorVisComponents"></div>
 
 <h1>Comet Chart 3D</h1>
 <canvas id="chart3D" width="300px" height="300px"></canvas>
+
+<h1>Vector Visualization</h1>
+<div id="vectorVis"></div>
+
+<h1>Vector Visualization Components</h1>
+<div id="vectorVisComponents"></div>
 </body>
 </html>

@@ -7,12 +7,18 @@ $(function() {
   var mouseDown = false;
   var lastX = 0;
   var lastY = 0;
-  var rotation = 0;
+  var rotation = 40;
+  var pointsLoaded = false;
+  var pointsBufferInfo = null;
+  var points = {
+    position: []
+  };
 
   twgl.setAttributePrefix("a_");
   var m4 = twgl.m4;
   var gl = twgl.getWebGLContext(canvas[0]);
-  var programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
+  var axesShader = twgl.createProgramInfo(gl, ["vs", "fs"]);
+  var pointsShader = twgl.createProgramInfo(gl, ["point-vs", "point-fs"]);
   var axes = {
     position: [
       0, 0, 0,
@@ -43,7 +49,7 @@ $(function() {
     return item*2;
   });
 
-  var bufferInfo = twgl.createBufferInfoFromArrays(gl, axes);
+  var axesBufferInfo = twgl.createBufferInfoFromArrays(gl, axes);
 
   var tex = twgl.createTexture(gl, {
     min: gl.NEAREST,
@@ -66,8 +72,7 @@ $(function() {
     u_diffuse: tex
   };
 
-  function render(time) {
-    time *= 0.001;
+  function render() {
     twgl.resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
@@ -90,12 +95,19 @@ $(function() {
     uniforms.u_worldInverseTranspose = m4.transpose(m4.inverse(world));
     uniforms.u_worldViewProjection = m4.multiply(world, viewProjection);
 
-    gl.useProgram(programInfo.program);
-    twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
-    twgl.setUniforms(programInfo, uniforms);
-    gl.drawElements(gl.LINES, bufferInfo.numElements, gl.UNSIGNED_SHORT, 0);
+    gl.useProgram(axesShader.program);
+    twgl.setBuffersAndAttributes(gl, axesShader, axesBufferInfo);
+    twgl.setUniforms(axesShader, uniforms);
+    twgl.drawBufferInfo(gl, gl.LINES, axesBufferInfo);
 
-    //rotation = 0;
+    if (pointsLoaded) {
+      gl.useProgram(pointsShader.program);
+      twgl.setBuffersAndAttributes(gl, pointsShader, pointsBufferInfo);
+      twgl.setUniforms(pointsShader, uniforms);
+      twgl.drawBufferInfo(gl, gl.POINTS, pointsBufferInfo);
+    }
+
+
     requestAnimationFrame(render);
   }
 
@@ -105,7 +117,7 @@ $(function() {
     lastY = event.clientY;
   });
 
-  canvas.on('mouseup mouseleave', function() {
+  $(document).on('mouseup', function() {
     mouseDown = false;
   });
 
@@ -116,6 +128,32 @@ $(function() {
       rotation += deltaX / 2 * Math.PI / 180;
       lastX = event.clientX;
     }
+  });
+
+  d3.csv("data/output2.csv", function(err, data) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    //plot the points, normalized on 2, 2, 2 scale
+    //x.domain(d3.extent(data, function(d) { return +d.applicants; })).nice();
+    //y.domain(d3.extent(data, function(d) { return +d.admitted; })).nice();
+    var x = d3.scale.linear()
+        .domain(d3.extent(data, function(d) { return +d.startvalue; }));
+
+    var y = d3.scale.linear()
+        .domain(d3.extent(data, function(d) { return +d.startweight; }));
+
+
+    data.forEach(function(item) {
+      points.position.push(x(+item.startvalue), y(+item.startweight), 0);
+      points.position.push(x(+item.endvalue), y(+item.endweight), 1);
+    });
+
+    console.log(points.position);
+
+    pointsLoaded = true;
+    pointsBufferInfo = twgl.createBufferInfoFromArrays(gl, points);
   });
 
   requestAnimationFrame(render);
