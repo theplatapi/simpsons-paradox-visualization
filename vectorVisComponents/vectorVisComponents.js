@@ -78,28 +78,36 @@ $(function() {
       return item.gender === 'male';
     });
 
-    //Put into function and run for male
-    var femaleAggregate = female.shift();
 
-    var prev = {x: 0, y: 0};
-    for (var i = 0; i < female.length; i++) {
-      var cur = {
-        x: female[i].applicants / femaleAggregate.applicants * 100 + prev.x,
-        y: (female[i].admitted / femaleAggregate.admitted * 100) + prev.y
-      };
 
-      svg.append("line")
-          .attr("x1", x(prev.x))
-          .attr("y1", y(prev.y))
-          .attr("x2", x(cur.x))
-          .attr("y2", y(cur.y))
-          .attr("marker-end", "url(#arrowhead)")
-          .attr("stroke-width", 2)
-          .attr("stroke", 'pink');
-      prev = cur;
-      //console.log(prev);
-    }
+    //TODO: Put everything below into a function and run for male
+    var plotGender = function(data, color) {
+      var aggregate = data.shift();
 
+      var prev = {x: 0, y: 0};
+      var percentAdmitted = aggregate.admitted / aggregate.applicants * 100;
+
+      for (var i = 0; i < data.length; i++) {
+        var cur = {
+          x: data[i].applicants / aggregate.applicants * 100 + prev.x,
+          y: (data[i].admitted / aggregate.admitted * percentAdmitted) + prev.y
+        };
+
+        svg.append("line")
+            .attr("x1", x(prev.x))
+            .attr("y1", y(prev.y))
+            .attr("x2", x(cur.x))
+            .attr("y2", y(cur.y))
+            .attr("marker-end", "url(#arrowhead)")
+            .attr("stroke-width", 2)
+            .attr("stroke", color);
+        prev = cur;
+        //console.log(prev);
+      }
+    };
+
+    plotGender(male, 'blue');
+    plotGender(female, 'pink');
 
     //svg.selectAll(".dot")
     //    .data(data)
