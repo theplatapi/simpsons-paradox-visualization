@@ -3,13 +3,16 @@
 
 $(function() {
   "use strict";
+  var canvas = $('#chart3D');
+  var mouseDown = false;
+  var lastX = 0;
+  var lastY = 0;
+  var rotation = 0;
+
   twgl.setAttributePrefix("a_");
   var m4 = twgl.m4;
-  var gl = twgl.getWebGLContext($('#chart3D')[0]);
+  var gl = twgl.getWebGLContext(canvas[0]);
   var programInfo = twgl.createProgramInfo(gl, ["vs", "fs"]);
-
-  //var bufferInfo = twgl.primitives.createCubeBufferInfo(gl, 2);
-
   var axes = {
     position: [
       0, 0, 0,
@@ -35,6 +38,10 @@ $(function() {
       1, 1
     ]
   };
+
+  axes.position = axes.position.map(function(item) {
+    return item*2;
+  });
 
   var bufferInfo = twgl.createBufferInfoFromArrays(gl, axes);
 
@@ -76,7 +83,7 @@ $(function() {
     var camera = m4.lookAt(eye, target, up);
     var view = m4.inverse(camera);
     var viewProjection = m4.multiply(view, projection);
-    var world = m4.rotationY(time);
+    var world = m4.rotationY(rotation);
 
     uniforms.u_viewInverse = camera;
     uniforms.u_world = world;
@@ -88,8 +95,28 @@ $(function() {
     twgl.setUniforms(programInfo, uniforms);
     gl.drawElements(gl.LINES, bufferInfo.numElements, gl.UNSIGNED_SHORT, 0);
 
+    //rotation = 0;
     requestAnimationFrame(render);
   }
+
+  canvas.on('mousedown', function(event) {
+    mouseDown = true;
+    lastX = event.clientX;
+    lastY = event.clientY;
+  });
+
+  canvas.on('mouseup mouseleave', function() {
+    mouseDown = false;
+  });
+
+  canvas.on('mousemove', function(event) {
+    if (mouseDown) {
+      var deltaX = event.clientX - lastX;
+
+      rotation += deltaX / 2 * Math.PI / 180;
+      lastX = event.clientX;
+    }
+  });
 
   requestAnimationFrame(render);
 });
