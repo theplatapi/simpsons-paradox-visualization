@@ -15,7 +15,7 @@ function placeAxis(location, margin, height) {
   }
 }
 
-function applyData(data, segmentName, width, height) {
+function getDataScales(data, segmentName, width, height) {
   // initialize counter variables
   var maxValue = 0, maxWeight = 0, diff = 0, sizeSum = [0, 0], comboSum = [0, 0];
 

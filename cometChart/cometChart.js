@@ -22,7 +22,7 @@ $(function() {
       .attr("class", "segments");
 
   d3.csv("data/output2.csv", function(err, data) {
-    var scales = applyData(data, segmentName, width, height);
+    var scales = getDataScales(data, segmentName, width, height);
 
     drawComets(segments, data, scales, filterName, segmentName);
     addAxis(segments, scales.size, 'bottom', margin, height);
