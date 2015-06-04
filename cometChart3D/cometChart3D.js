@@ -1,6 +1,13 @@
 //var vertexShader = require('./vertex.glsl');
 //var fragmentShader = require('./fragment.glsl');
 
+/*
+* TODO:
+* Axis ticks
+* Make canvas bigger
+* Add an extra time step to data
+ */
+
 $(function() {
   "use strict";
   var canvas = $('#chart3D');
@@ -11,7 +18,8 @@ $(function() {
   var pointsLoaded = false;
   var pointsBufferInfo = null;
   var points = {
-    position: []
+    position: [],
+    indices: []
   };
 
   twgl.setAttributePrefix("a_");
@@ -104,7 +112,7 @@ $(function() {
       gl.useProgram(pointsShader.program);
       twgl.setBuffersAndAttributes(gl, pointsShader, pointsBufferInfo);
       twgl.setUniforms(pointsShader, uniforms);
-      twgl.drawBufferInfo(gl, gl.POINTS, pointsBufferInfo);
+      twgl.drawBufferInfo(gl, gl.LINES, pointsBufferInfo);
     }
 
 
@@ -121,7 +129,7 @@ $(function() {
     mouseDown = false;
   });
 
-  canvas.on('mousemove', function(event) {
+  $(document).on('mousemove', function(event) {
     if (mouseDown) {
       var deltaX = event.clientX - lastX;
 
@@ -135,6 +143,7 @@ $(function() {
       console.log(err);
       return;
     }
+    var i = 0;
 
     var x1 = d3.scale.log()
         .domain(d3.extent(data, function(d) { return +d.startweight; }))
@@ -155,6 +164,9 @@ $(function() {
     data.forEach(function(item) {
       points.position.push(x1(+item.startweight), y1(+item.startvalue), 0);
       points.position.push(x2(+item.endweight), y2(+item.endvalue), 1);
+
+      points.indices.push(i++);
+      points.indices.push(i++);
     });
 
     pointsLoaded = true;
