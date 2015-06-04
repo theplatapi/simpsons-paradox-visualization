@@ -136,19 +136,26 @@ $(function() {
       return;
     }
 
-    var x = d3.scale.linear()
-        .domain(d3.extent(data, function(d) { return +d.startvalue; }));
+    var x1 = d3.scale.log()
+        .domain(d3.extent(data, function(d) { return +d.startweight; }))
+        .range([0, 1.5]);
 
-    var y = d3.scale.linear()
-        .domain(d3.extent(data, function(d) { return +d.startweight; }));
+    var x2 = d3.scale.log()
+        .domain(d3.extent(data, function(d) { return +d.endweight; }))
+        .range([0, 1.5]);
 
+    var y1 = d3.scale.log()
+        .domain(d3.extent(data, function(d) { return +d.startvalue; }))
+        .range([0, 1.5]);
+
+    var y2 = d3.scale.log()
+        .domain(d3.extent(data, function(d) { return +d.endvalue; }))
+        .range([0, 1.5]);
 
     data.forEach(function(item) {
-      points.position.push(x(+item.startvalue), y(+item.startweight), 0);
-      points.position.push(x(+item.endvalue), y(+item.endweight), 1);
+      points.position.push(x1(+item.startweight), y1(+item.startvalue), 0);
+      points.position.push(x2(+item.endweight), y2(+item.endvalue), 1);
     });
-
-    console.log(points.position);
 
     pointsLoaded = true;
     pointsBufferInfo = twgl.createBufferInfoFromArrays(gl, points);
