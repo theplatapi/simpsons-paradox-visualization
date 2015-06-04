@@ -1,0 +1,14 @@
+department,gender,applicants,admitted
+Aggregate,female,1835,557
+A,female,108,89
+B,female,25,17
+C,female,593,202
+D,female,375,131
+E,female,393,94
+F,female,341,24
+A,male,825,512
+B,male,560,353
+C,male,325,120
+D,male,417,138
+E,male,191,53
+F,male,373,22
