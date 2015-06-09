@@ -1,9 +1,10 @@
 /*
  * TODO:
- * Add aggregate line
- * Axis ticks
+ * Axis ticks/labels
  * Make canvas bigger
  * Add an extra time step to data
+ * Change data set with dropdown
+ * Change background
  */
 
 $.getMultiScripts = function(arr, path, cb) {
@@ -62,18 +63,6 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
         0, 1,
         0, 2,
         0, 3
-      ],
-      normal: [
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0,
-        0, 1, 0
-      ],
-      texcoord: [
-        0, 0,
-        0, 1,
-        1, 0,
-        1, 1
       ]
     };
 
@@ -94,15 +83,7 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
       ]
     });
 
-    var uniforms = {
-      u_lightWorldPos: [1, 8, -10],
-      u_lightColor: [1, 0.8, 0.8, 1],
-      u_ambient: [0, 0, 0, 1],
-      u_specular: [1, 1, 1, 1],
-      u_shininess: 50,
-      u_specularFactor: 1,
-      u_diffuse: tex
-    };
+    var uniforms = {};
 
     function render() {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -122,9 +103,6 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
       var viewProjection = m4.multiply(view, projection);
       var world = m4.rotationY(rotation);
 
-      uniforms.u_viewInverse = camera;
-      uniforms.u_world = world;
-      uniforms.u_worldInverseTranspose = m4.transpose(m4.inverse(world));
       uniforms.u_worldViewProjection = m4.multiply(world, viewProjection);
 
       gl.useProgram(axesShaderInfo.program);
@@ -168,6 +146,7 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
         return;
       }
       var i = 0;
+      var sizeSum = [0, 0], comboSum = [0, 0];
 
       var x1 = d3.scale.log()
           .domain(d3.extent(data, function(d) {
@@ -198,8 +177,24 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
         points.indices.data.push(i++, i++);
         //TODO: Change start and end color like comet
         points.color.data.push(1, 0.6, 0, 1, 0.3, 0);
+
+        // calculate aggregate line
+        sizeSum = [sizeSum[0] + +item.startweight,
+          sizeSum[1] + +item.endweight];
+        comboSum = [comboSum[0] + +item.startweight * +item.startvalue,
+          comboSum[1] + +item.endweight * +item.endvalue];
       });
-      //TODO: Add an aggregate line
+
+      var aggregate = {
+        startvalue: comboSum[0] / sizeSum[0],
+        endvalue: comboSum[1] / sizeSum[1],
+        startweight: sizeSum[0] / data.length,
+        endweight: sizeSum[1] / data.length
+      };
+
+      points.position.data.push(x1(+aggregate.startweight), y1(+aggregate.startvalue), 0, x2(+aggregate.endweight), y2(+aggregate.endvalue), 1);
+      points.indices.data.push(i++, i++);
+      points.color.data.push(0, 0.6, 1, 0, 0.3, 0);
 
       pointsLoaded = true;
       pointsBufferInfo = twgl.createBufferInfoFromArrays(gl, points);
