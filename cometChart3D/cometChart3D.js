@@ -7,7 +7,7 @@
  * Change background
  */
 
-$.getMultiScripts = function(arr, path, cb) {
+$.getScripts = function(arr, path) {
   var _arr = $.map(arr, function(src) {
     return $.get((path || "") + src);
   });
@@ -16,19 +16,33 @@ $.getMultiScripts = function(arr, path, cb) {
     $(deferred.resolve);
   }));
 
-  $.when.apply($, _arr).done(function(axesVs, axesFs, pointVs, pointFs) {
-    cb(axesVs[0], axesFs[0], pointVs[0], pointFs[0]);
-  });
+  return $.when.apply($, _arr);
+};
+
+//Puts text in center of canvas.
+var makeTextCanvas = function(text, width, height) {
+  var textCtx = document.createElement("canvas").getContext("2d");
+  textCtx.canvas.width  = width;
+  textCtx.canvas.height = height;
+  textCtx.font = "20px monospace";
+  textCtx.textAlign = "center";
+  textCtx.textBaseline = "middle";
+  textCtx.fillStyle = "black";
+  textCtx.clearRect(0, 0, textCtx.canvas.width, textCtx.canvas.height);
+  textCtx.fillText(text, width / 2, height / 2);
+  return textCtx.canvas;
 };
 
 var shaders = [
   'axesVs.glsl',
   'axesFs.glsl',
   'pointVs.glsl',
-  'pointFs.glsl'
+  'pointFs.glsl',
+  'textVs.glsl',
+  'textFs.glsl'
 ];
 
-$.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, pointVs, pointFs) {
+$.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, pointVs, pointFs, textVs, textFs) {
   "use strict";
 
   $(function() {
@@ -49,8 +63,9 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
     twgl.setAttributePrefix("a_");
     var m4 = twgl.m4;
     var gl = twgl.getWebGLContext(canvas[0]);
-    var axesShaderInfo = twgl.createProgramInfo(gl, [axesVs, axesFs]);
-    var pointsShaderInfo = twgl.createProgramInfo(gl, [pointVs, pointFs]);
+    var axesShaderInfo = twgl.createProgramInfo(gl, [axesVs[0], axesFs[0]]);
+    var pointsShaderInfo = twgl.createProgramInfo(gl, [pointVs[0], pointFs[0]]);
+    var textShaderInfo = twgl.createProgramInfo(gl, [textVs[0], textFs[0]]);
 
     var axes = {
       position: [
@@ -72,16 +87,19 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
 
     var axesBufferInfo = twgl.createBufferInfoFromArrays(gl, axes);
 
-    var tex = twgl.createTexture(gl, {
-      min: gl.NEAREST,
-      mag: gl.NEAREST,
-      src: [
-        255, 255, 255, 255,
-        192, 192, 192, 255,
-        192, 192, 192, 255,
-        255, 255, 255, 255
-      ]
+    //Create axis label
+    //*Generate translucent plane
+    //*generate text with canvas
+    //position it
+
+    var textPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl); //, 1, 1, 1, 1, m4.axisRotation(twgl.v3(1, 0, 0), Math.PI / 2)
+    //console.log(twgl.primitives.createPlaneVertices());
+
+    //console.log(textPlaneBufferInfo);
+    var textTex = twgl.createTextures(gl, {
+      fromCanvas: {src: makeTextCanvas("weights", 100, 26)}
     });
+    //console.log(textTex);
 
     var uniforms = {};
 
@@ -117,6 +135,11 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
         twgl.drawBufferInfo(gl, gl.LINES, pointsBufferInfo);
       }
 
+      //draw text
+      gl.useProgram(textShaderInfo.program);
+      twgl.setBuffersAndAttributes(gl, textShaderInfo, textPlaneBufferInfo);
+      twgl.setUniforms(textShaderInfo, {u_texture: textTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, textPlaneBufferInfo);
 
       requestAnimationFrame(render);
     }
