@@ -1,6 +1,3 @@
-//var vertexShader = require('./vertex.glsl');
-//var fragmentShader = require('./axesFs.glsl');
-
 /*
  * TODO:
  * Add aggregate line
@@ -42,18 +39,18 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
     var pointsLoaded = false;
     var pointsBufferInfo = null;
     var points = {
-      position: [],
-      indices: []
+      position: {numComponents: 3, data: []},
+      indices: {numComponents: 2, data: []},
+      color: {numComponents: 3, data: []}
     };
 
+    //http://twgljs.org/docs/module-twgl.html
     twgl.setAttributePrefix("a_");
     var m4 = twgl.m4;
     var gl = twgl.getWebGLContext(canvas[0]);
     var axesShaderInfo = twgl.createProgramInfo(gl, [axesVs, axesFs]);
     var pointsShaderInfo = twgl.createProgramInfo(gl, [pointVs, pointFs]);
 
-    //var axesShader = twgl.createProgramInfo(gl, ["vs", "fs"]);
-    //var pointsShader = twgl.createProgramInfo(gl, ["point-vs", "point-fs"]);
     var axes = {
       position: [
         0, 0, 0,
@@ -197,12 +194,12 @@ $.getMultiScripts(shaders, 'cometChart3D/shaders/', function(axesVs, axesFs, poi
           .range([0, 1.5]);
 
       data.forEach(function(item) {
-        points.position.push(x1(+item.startweight), y1(+item.startvalue), 0);
-        points.position.push(x2(+item.endweight), y2(+item.endvalue), 1);
-
-        points.indices.push(i++);
-        points.indices.push(i++);
+        points.position.data.push(x1(+item.startweight), y1(+item.startvalue), 0, x2(+item.endweight), y2(+item.endvalue), 1);
+        points.indices.data.push(i++, i++);
+        //TODO: Change start and end color like comet
+        points.color.data.push(1, 0.6, 0, 1, 0.3, 0);
       });
+      //TODO: Add an aggregate line
 
       pointsLoaded = true;
       pointsBufferInfo = twgl.createBufferInfoFromArrays(gl, points);

@@ -5,7 +5,9 @@ uniform mat4 u_viewInverse;
 uniform mat4 u_worldInverseTranspose;
 
 attribute vec3 a_position;
+attribute vec3 a_color;
 
+varying vec3 v_color;
 varying vec3 v_surfaceToLight;
 varying vec3 v_surfaceToView;
 
@@ -14,6 +16,6 @@ void main() {
 
   v_surfaceToLight = u_lightWorldPos - (u_world * position).xyz;
   v_surfaceToView = (u_viewInverse[3] - (u_world * position)).xyz;
-  gl_PointSize = 5.0;
+  v_color = a_color;
   gl_Position = (u_worldViewProjection * position);
 }

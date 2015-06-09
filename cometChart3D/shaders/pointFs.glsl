@@ -1,5 +1,6 @@
 precision mediump float;
 
+varying vec3 v_color;
 varying vec3 v_surfaceToLight;
 varying vec3 v_surfaceToView;
 
@@ -10,5 +11,5 @@ uniform float u_shininess;
 uniform float u_specularFactor;
 
 void main() {
-  gl_FragColor = vec4(1, 0.6, 0, 1);
+  gl_FragColor = vec4(v_color, 1);
 }
