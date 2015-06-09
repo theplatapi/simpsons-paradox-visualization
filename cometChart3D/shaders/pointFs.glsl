@@ -1,8 +1,6 @@
 precision mediump float;
 
 varying vec3 v_color;
-varying vec3 v_surfaceToLight;
-varying vec3 v_surfaceToView;
 
 uniform vec4 u_lightColor;
 uniform vec4 u_ambient;
