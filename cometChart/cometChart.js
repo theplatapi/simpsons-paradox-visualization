@@ -12,13 +12,11 @@ $(function() {
 
   var svg = d3.select("#chart")
       .append("svg")
-      .attr('width', width + margin.right + margin.left)
-      .attr('height', height + margin.top + margin.bottom)
-      .style("margin-left", -margin.left + "px")
-      .style("margin.right", -margin.right + "px");
+      .attr('width', "100%")
+      .attr('height', height + margin.top + margin.bottom);
 
   var segments = svg.append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+      .attr("transform", "translate(0, 30)")
       .attr("class", "segments");
 
   d3.csv("data/output2.csv", function(err, data) {
