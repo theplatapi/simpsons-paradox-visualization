@@ -15,6 +15,7 @@
   <!-- endbower -->
 
   <link rel="stylesheet" href="cometChart/cometChart.css">
+  <link rel="stylesheet" href="cometChart3D/cometChart3D.css">
 
   <script src="cometChart/cometChartFunctions.js"></script>
   <script src="cometChart/cometChart.js"></script>
@@ -23,16 +24,37 @@
   <script src="vectorVisComponents/vectorVisComponents.js"></script>
 </head>
 <body>
-<h1>Comet Chart</h1>
-<div id="chart"></div>
+<div class="container">
+  <div class="col-md-6">
+    <h1>Comet Chart</h1>
+    <div id="chart"></div>
+  </div>
 
-<h1>Comet Chart 3D</h1>
-<canvas id="chart3D" width="500px" height="500px"></canvas>
+  <div id="cc3dParent" class="col-md-6">
+    <h1>Comet Chart 3D</h1>
+    <div class="btn-group">
+      <button type="button" class="btn btn-default">Data Set</button>
+      <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        <span class="caret"></span>
+        <span class="sr-only">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu" role="menu">
+        <li><a href="#">Weight Data</a></li>
+        <li><a href="#">Berkley Admissions</a></li>
+      </ul>
+    </div>
+    <canvas id="chart3D"></canvas>
+  </div>
 
-<h1>Vector Visualization</h1>
-<div id="vectorVis"></div>
+  <div class="col-md-12">
+    <h1>Vector Visualization</h1>
+    <div id="vectorVis"></div>
+  </div>
 
-<h1>Vector Visualization Components</h1>
-<div id="vectorVisComponents"></div>
+  <div class="col-md-12">
+    <h1>Vector Visualization Components</h1>
+    <div id="vectorVisComponents"></div>
+  </div>
+</div>
 </body>
 </html>
