@@ -62,7 +62,6 @@ function getDataScales(data, segmentName, width, height) {
       .range(['orange', 'grey', 'blue']);
 
   return {size: sizeScale, value: valueScale, color: colorScale}
-
 }
 
 // data to polygons
