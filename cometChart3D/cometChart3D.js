@@ -24,8 +24,7 @@ var makeTextCanvas = function(text, width, height) {
   var textContext = document.createElement("canvas").getContext("2d");
   textContext.canvas.width  = width;
   textContext.canvas.height = height;
-  //textContext.scale(-1, 1);
-  textContext.font = "20px monospace";
+  textContext.font = "20px Arial";
   textContext.textAlign = "center";
   textContext.textBaseline = "middle";
   textContext.fillStyle = "black";
@@ -93,7 +92,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var translateOver = m4.translation([0.2, 0.15, 0]);
     var xPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(rotateX, translateOver));
     var xTextTex = twgl.createTextures(gl, {
-      fromCanvas: {src: makeTextCanvas("weight", 250, 52)}
+      fromCanvas: {src: makeTextCanvas("weight", 200, 100)}
     });
 
     //Respositon so top faces z axis
@@ -102,25 +101,13 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var rotateZ = m4.rotateZ(identity, 90 * Math.PI / 180);
     var yPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateX, rotateZ), translateBack));
     var yTextTex = twgl.createTextures(gl, {
-      fromCanvas: {src: makeTextCanvas("value", 250, 52)}
+      fromCanvas: {src: makeTextCanvas("value", 200, 100)}
     });
-
-
-    /*
-     var translateBack = m4.translation([0, 0.15, -0.2]);
-     var rotateX2 = m4.rotateX(identity, 180 * Math.PI / 180);
-     var rotateY = m4.rotateY(identity, 90 * Math.PI / 180);
-     var rotateZ = m4.rotateZ(identity, -90 * Math.PI / 180);
-     var yPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateZ, rotateX2), translateBack));
-     var yTextTex = twgl.createTextures(gl, {
-     fromCanvas: {src: makeTextCanvas("value", 250, 52)}
-     });
-     */
 
     var translateForward = m4.translation([0, 0.15, 0.2]);
     var zPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateX, rotateY), translateForward));
     var zTextTex = twgl.createTextures(gl, {
-      fromCanvas: {src: makeTextCanvas("time", 250, 52)}
+      fromCanvas: {src: makeTextCanvas("time", 200, 100)}
     });
 
     var uniforms = {};
