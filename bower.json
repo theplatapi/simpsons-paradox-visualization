@@ -1,5 +1,6 @@
 {
   "name": "simpsons",
+  "private": true,
   "version": "0.0.1",
   "authors": [
     "Allen Korenevsky <akorenev@calpoly.edu>"
@@ -17,5 +18,19 @@
     "bower_components",
     "test",
     "tests"
-  ]
+  ],
+  "dependencies": {
+    "jquery": "~2.1.4",
+    "d3": "~3.5.5",
+    "twgl.js": "~0.0.21",
+    "bootstrap": "~3.3.4"
+  },
+  "overrides": {
+    "d3": {
+      "main": "d3.min.js"
+    },
+    "jquery": {
+      "main": "dist/jquery.min.js"
+    }
+  }
 }
