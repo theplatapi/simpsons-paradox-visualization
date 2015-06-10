@@ -21,16 +21,17 @@ $.getScripts = function(arr, path) {
 
 //Puts text in center of canvas.
 var makeTextCanvas = function(text, width, height) {
-  var textCtx = document.createElement("canvas").getContext("2d");
-  textCtx.canvas.width  = width;
-  textCtx.canvas.height = height;
-  textCtx.font = "20px monospace";
-  textCtx.textAlign = "center";
-  textCtx.textBaseline = "middle";
-  textCtx.fillStyle = "black";
-  textCtx.clearRect(0, 0, textCtx.canvas.width, textCtx.canvas.height);
-  textCtx.fillText(text, width / 2, height / 2);
-  return textCtx.canvas;
+  var textContext = document.createElement("canvas").getContext("2d");
+  textContext.canvas.width  = width;
+  textContext.canvas.height = height;
+  //textContext.scale(-1, 1);
+  textContext.font = "20px monospace";
+  textContext.textAlign = "center";
+  textContext.textBaseline = "middle";
+  textContext.fillStyle = "black";
+  textContext.clearRect(0, 0, textContext.canvas.width, textContext.canvas.height);
+  textContext.fillText(text, width / 2, height / 2);
+  return textContext.canvas;
 };
 
 var shaders = [
@@ -87,28 +88,49 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
 
     var axesBufferInfo = twgl.createBufferInfoFromArrays(gl, axes);
 
-    //Create axis label
-    //*Generate translucent plane
-    //*generate text with canvas
-    //position it
-
-    var textPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl); //, 1, 1, 1, 1, m4.axisRotation(twgl.v3(1, 0, 0), Math.PI / 2)
-    //console.log(twgl.primitives.createPlaneVertices());
-
-    //console.log(textPlaneBufferInfo);
-    var textTex = twgl.createTextures(gl, {
-      fromCanvas: {src: makeTextCanvas("weights", 100, 26)}
+    var identity = m4.identity();
+    var rotateX = m4.rotateX(identity, 90 * Math.PI / 180);
+    var translateOver = m4.translation([0.2, 0.15, 0]);
+    var xPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(rotateX, translateOver));
+    var xTextTex = twgl.createTextures(gl, {
+      fromCanvas: {src: makeTextCanvas("weight", 250, 52)}
     });
-    //console.log(textTex);
+
+    //Respositon so top faces z axis
+    var translateBack = m4.translation([-0.2, 0.15, 0]);
+    var rotateY = m4.rotateY(identity, 90 * Math.PI / 180);
+    var rotateZ = m4.rotateZ(identity, 90 * Math.PI / 180);
+    var yPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateX, rotateZ), translateBack));
+    var yTextTex = twgl.createTextures(gl, {
+      fromCanvas: {src: makeTextCanvas("value", 250, 52)}
+    });
+
+
+    /*
+     var translateBack = m4.translation([0, 0.15, -0.2]);
+     var rotateX2 = m4.rotateX(identity, 180 * Math.PI / 180);
+     var rotateY = m4.rotateY(identity, 90 * Math.PI / 180);
+     var rotateZ = m4.rotateZ(identity, -90 * Math.PI / 180);
+     var yPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateZ, rotateX2), translateBack));
+     var yTextTex = twgl.createTextures(gl, {
+     fromCanvas: {src: makeTextCanvas("value", 250, 52)}
+     });
+     */
+
+    var translateForward = m4.translation([0, 0.15, 0.2]);
+    var zPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateX, rotateY), translateForward));
+    var zTextTex = twgl.createTextures(gl, {
+      fromCanvas: {src: makeTextCanvas("time", 250, 52)}
+    });
 
     var uniforms = {};
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
     function render() {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-      gl.enable(gl.DEPTH_TEST);
-      gl.enable(gl.CULL_FACE);
+      gl.disable(gl.BLEND);
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
       var projection = m4.perspective(30 * Math.PI / 180, gl.canvas.clientWidth / gl.canvas.clientHeight, 0.5, 10);
@@ -135,11 +157,23 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
         twgl.drawBufferInfo(gl, gl.LINES, pointsBufferInfo);
       }
 
+      //Makes text plane translucent
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
       //draw text
       gl.useProgram(textShaderInfo.program);
-      twgl.setBuffersAndAttributes(gl, textShaderInfo, textPlaneBufferInfo);
-      twgl.setUniforms(textShaderInfo, {u_texture: textTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
-      twgl.drawBufferInfo(gl, gl.TRIANGLES, textPlaneBufferInfo);
+      twgl.setBuffersAndAttributes(gl, textShaderInfo, xPlaneBufferInfo);
+      twgl.setUniforms(textShaderInfo, {u_texture: xTextTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, xPlaneBufferInfo);
+
+      twgl.setBuffersAndAttributes(gl, textShaderInfo, yPlaneBufferInfo);
+      twgl.setUniforms(textShaderInfo, {u_texture: yTextTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, yPlaneBufferInfo);
+
+      twgl.setBuffersAndAttributes(gl, textShaderInfo, zPlaneBufferInfo);
+      twgl.setUniforms(textShaderInfo, {u_texture: zTextTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
+      twgl.drawBufferInfo(gl, gl.TRIANGLES, zPlaneBufferInfo);
 
       requestAnimationFrame(render);
     }
