@@ -1,7 +1,7 @@
 /*
  * TODO:
- * Axis ticks/labels
- * Make canvas bigger
+ * Change data color based on turn (like current comet chart)
+ * Axis ticks
  * Add an extra time step to data
  * Change data set with dropdown
  * Change background
@@ -50,8 +50,10 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var mouseDown = false;
     var lastX = 0;
     var lastY = 0;
-    var rotation = 40;
+    var yRotation = 40;
+    var xRotation = 0;
     var pointsLoaded = false;
+    var rotateYWithMouse = false;
     var pointsBufferInfo = null;
     var points = {
       position: {numComponents: 3, data: []},
@@ -95,7 +97,6 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       fromCanvas: {src: makeTextCanvas("weight", 200, 100)}
     });
 
-    //Respositon so top faces z axis
     var translateBack = m4.translation([-0.2, 0.15, 0]);
     var rotateY = m4.rotateY(identity, 90 * Math.PI / 180);
     var rotateZ = m4.rotateZ(identity, 90 * Math.PI / 180);
@@ -128,7 +129,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       var camera = m4.lookAt(eye, target, up);
       var view = m4.inverse(camera);
       var viewProjection = m4.multiply(view, projection);
-      var world = m4.rotationY(rotation);
+      var world = m4.multiply(m4.rotationY(yRotation), m4.rotationX(xRotation));
 
       uniforms.u_worldViewProjection = m4.multiply(world, viewProjection);
 
@@ -173,14 +174,28 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
 
     $(document).on('mouseup', function() {
       mouseDown = false;
-    });
-
-    $(document).on('mousemove', function(event) {
+    }).on('mousemove', function(event) {
       if (mouseDown) {
         var deltaX = event.clientX - lastX;
+        var deltaY = lastY - event.clientY;
 
-        rotation += deltaX / 2 * Math.PI / 180;
+        yRotation += deltaX / 2 * Math.PI / 180;
+        if (rotateYWithMouse) {
+          xRotation += deltaY / 2 * Math.PI / 180;
+        }
+
         lastX = event.clientX;
+        lastY = event.clientY;
+      }
+    }).on("keydown", function(event) {
+      //y key
+      if (event.which == 89) {
+        rotateYWithMouse = true;
+      }
+    }).on("keyup", function(event) {
+      //y key
+      if (event.which == 89) {
+        rotateYWithMouse = false;
       }
     });
 
@@ -189,7 +204,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
         console.log(err);
         return;
       }
-      var i = 0;
+      var i = 0, diff = 0;
       var sizeSum = [0, 0], comboSum = [0, 0];
 
       var x1 = d3.scale.log()
@@ -220,13 +235,44 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
         points.position.data.push(x1(+item.startweight), y1(+item.startvalue), 0, x2(+item.endweight), y2(+item.endvalue), 1);
         points.indices.data.push(i++, i++);
         //TODO: Change start and end color like comet
-        points.color.data.push(1, 0.6, 0, 1, 0.3, 0);
+        //points.color.data.push(1, 0.6, 0, 1, 0.3, 0);
 
         // calculate aggregate line
-        sizeSum = [sizeSum[0] + +item.startweight,
-          sizeSum[1] + +item.endweight];
-        comboSum = [comboSum[0] + +item.startweight * +item.startvalue,
-          comboSum[1] + +item.endweight * +item.endvalue];
+        sizeSum = [sizeSum[0] + +item.startweight, sizeSum[1] + +item.endweight];
+        comboSum = [comboSum[0] + +item.startweight * +item.startvalue, comboSum[1] + +item.endweight * +item.endvalue];
+
+        //calculate diff for color
+        item.weightDiff = +item.endweight - +item.startweight;
+        if (Math.abs(item.weightDiff) > diff) {
+          diff = Math.abs(item.weightDiff)
+        }
+      });
+
+      //functions to convert hex to rgb values
+      function hexToR(h) {
+        return parseInt((cutHex(h)).substring(0, 2), 16) / 255;
+      }
+
+      function hexToG(h) {
+        return parseInt((cutHex(h)).substring(2, 4), 16) / 255;
+      }
+
+      function hexToB(h) {
+        return parseInt((cutHex(h)).substring(4, 6), 16) / 255;
+      }
+
+      function cutHex(h) {
+        return (h.charAt(0) == "#") ? h.substring(1, 7) : h;
+      }
+
+      var colorScale = d3.scale.linear()
+          .domain([-diff, 0, diff])
+          .range(['orange', 'grey', 'blue']);
+
+      //second loop to compute colors
+      data.forEach(function(item) {
+        var color = colorScale(item.weightDiff);
+        points.color.data.push(hexToR(color), hexToG(color), hexToB(color), hexToR(color), hexToG(color), hexToB(color));
       });
 
       var aggregate = {
@@ -238,7 +284,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
 
       points.position.data.push(x1(+aggregate.startweight), y1(+aggregate.startvalue), 0, x2(+aggregate.endweight), y2(+aggregate.endvalue), 1);
       points.indices.data.push(i++, i++);
-      points.color.data.push(0, 0.6, 1, 0, 0.3, 0);
+      points.color.data.push(1, 0, 0, 0.7, 0, 0);
 
       pointsLoaded = true;
       pointsBufferInfo = twgl.createBufferInfoFromArrays(gl, points);
