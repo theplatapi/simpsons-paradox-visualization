@@ -25,9 +25,7 @@ $(function() {
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  d3.csv("data/students.csv", function(error, data) {
-    //x.domain(d3.extent(data, function(d) { return +d.applicants; })).nice();
-    //y.domain(d3.extent(data, function(d) { return +d.admitted; })).nice();
+  d3.csv("data/students.csv", function(err, data) {
     x.domain([0, 9000]);
     y.domain([0, 100]);
 
@@ -53,6 +51,22 @@ $(function() {
         .style("text-anchor", "end")
         .text("Admitted (%)");
 
+
+    for (var i = 0; i < data.length; i+=2) {
+      var lineColor = +data[i].admitted > +data[i+1].admitted ? 'blue' : 'pink';
+
+      svg.append("line")
+          .attr("x1", x(data[i].applicants))
+          .attr("y1", y(data[i].admitted))
+          .attr("x2", x(data[i+1].applicants))
+          .attr("y2", y(data[i+1].admitted))
+          //.attr("marker-end", "url(#arrowhead)")
+          .attr("stroke-width", 2)
+          //.attr("stroke", color(data[i].department));
+          //pink line if more women admitted then men
+          .attr("stroke", lineColor);
+    }
+
     svg.selectAll(".dot")
         .data(data)
         .enter().append("circle")
@@ -60,7 +74,11 @@ $(function() {
         .attr("r", 3.5)
         .attr("cx", function(d) { return x(d.applicants); })
         .attr("cy", function(d) { return y(d.admitted); })
-        .style("fill", function(d) { return color(d.department); });
+        .style("fill", function(d) { return d.gender === 'male' ? 'blue' : 'pink'; })
+        .append('title')
+        .text(function (d) {
+          return d.gender + ': (Applied: ' + d.applicants + ", Admitted: " + d.admitted + '%)';
+        });
 
     var legend = svg.selectAll(".legend")
         .data(color.domain())
