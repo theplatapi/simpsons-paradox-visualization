@@ -1,11 +1,27 @@
 /*
  * TODO:
- * Change data color based on turn (like current comet chart)
+ * Change data set with dropdown
  * Axis ticks
  * Add an extra time step to data
- * Change data set with dropdown
  * Change background
  */
+
+//functions to convert hex to rgb values
+function hexToR(h) {
+  return parseInt((cutHex(h)).substring(0, 2), 16) / 255;
+}
+
+function hexToG(h) {
+  return parseInt((cutHex(h)).substring(2, 4), 16) / 255;
+}
+
+function hexToB(h) {
+  return parseInt((cutHex(h)).substring(4, 6), 16) / 255;
+}
+
+function cutHex(h) {
+  return (h.charAt(0) == "#") ? h.substring(1, 7) : h;
+}
 
 $.getScripts = function(arr, path) {
   var _arr = $.map(arr, function(src) {
@@ -22,7 +38,7 @@ $.getScripts = function(arr, path) {
 //Puts text in center of canvas.
 var makeTextCanvas = function(text, width, height) {
   var textContext = document.createElement("canvas").getContext("2d");
-  textContext.canvas.width  = width;
+  textContext.canvas.width = width;
   textContext.canvas.height = height;
   textContext.font = "20px Arial";
   textContext.textAlign = "center";
@@ -36,8 +52,8 @@ var makeTextCanvas = function(text, width, height) {
 var shaders = [
   'axesVs.glsl',
   'axesFs.glsl',
-  'pointVs.glsl',
-  'pointFs.glsl',
+  'vanillaVs.glsl',
+  'vanillaFs.glsl',
   'textVs.glsl',
   'textFs.glsl'
 ];
@@ -54,8 +70,14 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var xRotation = 0;
     var pointsLoaded = false;
     var rotateYWithMouse = false;
-    var pointsBufferInfo = null;
-    var points = {
+    var weightValueBufferInfo = null;
+    var employmentBufferInfo = null;
+    var weightValuePoints = {
+      position: {numComponents: 3, data: []},
+      indices: {numComponents: 2, data: []},
+      color: {numComponents: 3, data: []}
+    };
+    var employmentPoints = {
       position: {numComponents: 3, data: []},
       indices: {numComponents: 2, data: []},
       color: {numComponents: 3, data: []}
@@ -66,7 +88,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var m4 = twgl.m4;
     var gl = twgl.getWebGLContext(canvas[0]);
     var axesShaderInfo = twgl.createProgramInfo(gl, [axesVs[0], axesFs[0]]);
-    var pointsShaderInfo = twgl.createProgramInfo(gl, [pointVs[0], pointFs[0]]);
+    var vanillaShaderInfo = twgl.createProgramInfo(gl, [pointVs[0], pointFs[0]]);
     var textShaderInfo = twgl.createProgramInfo(gl, [textVs[0], textFs[0]]);
 
     var axes = {
@@ -139,10 +161,14 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       twgl.drawBufferInfo(gl, gl.LINES, axesBufferInfo);
 
       if (pointsLoaded) {
-        gl.useProgram(pointsShaderInfo.program);
-        twgl.setBuffersAndAttributes(gl, pointsShaderInfo, pointsBufferInfo);
-        twgl.setUniforms(pointsShaderInfo, uniforms);
-        twgl.drawBufferInfo(gl, gl.LINES, pointsBufferInfo);
+        gl.useProgram(vanillaShaderInfo.program);
+        //twgl.setBuffersAndAttributes(gl, pointsShaderInfo, weightValueBufferInfo);
+        //twgl.setUniforms(pointsShaderInfo, uniforms);
+        //twgl.drawBufferInfo(gl, gl.LINES, weightValueBufferInfo);
+        twgl.setBuffersAndAttributes(gl, vanillaShaderInfo, employmentBufferInfo);
+        twgl.setUniforms(vanillaShaderInfo, uniforms);
+        twgl.drawBufferInfo(gl, gl.LINES, employmentBufferInfo);
+        //gl.drawArrays(gl.POINTS, 0, 5);//employmentPoints.position.data.length
       }
 
       //Makes text plane translucent
@@ -152,15 +178,24 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       //draw text
       gl.useProgram(textShaderInfo.program);
       twgl.setBuffersAndAttributes(gl, textShaderInfo, xPlaneBufferInfo);
-      twgl.setUniforms(textShaderInfo, {u_texture: xTextTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
+      twgl.setUniforms(textShaderInfo, {
+        u_texture: xTextTex.fromCanvas,
+        u_worldViewProjection: uniforms.u_worldViewProjection
+      });
       twgl.drawBufferInfo(gl, gl.TRIANGLES, xPlaneBufferInfo);
 
       twgl.setBuffersAndAttributes(gl, textShaderInfo, yPlaneBufferInfo);
-      twgl.setUniforms(textShaderInfo, {u_texture: yTextTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
+      twgl.setUniforms(textShaderInfo, {
+        u_texture: yTextTex.fromCanvas,
+        u_worldViewProjection: uniforms.u_worldViewProjection
+      });
       twgl.drawBufferInfo(gl, gl.TRIANGLES, yPlaneBufferInfo);
 
       twgl.setBuffersAndAttributes(gl, textShaderInfo, zPlaneBufferInfo);
-      twgl.setUniforms(textShaderInfo, {u_texture: zTextTex.fromCanvas, u_worldViewProjection: uniforms.u_worldViewProjection});
+      twgl.setUniforms(textShaderInfo, {
+        u_texture: zTextTex.fromCanvas,
+        u_worldViewProjection: uniforms.u_worldViewProjection
+      });
       twgl.drawBufferInfo(gl, gl.TRIANGLES, zPlaneBufferInfo);
 
       requestAnimationFrame(render);
@@ -199,6 +234,65 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       }
     });
 
+    //TODO: Create a setAxisLabels function to call when switch
+    //TODO: Load the new buffer in when switch
+
+    d3.json("data/employment.json", function(err, data) {
+      var index = 0;
+      var diff = 0;
+      var dates = data.dates;
+      var aggregate = data.aggregate;
+      delete data.dates;
+      delete data.aggregate;
+      var xScale = d3.scale.linear().domain([58000, 115000]).range([0, 1.5]);
+      var yScale = d3.scale.linear().domain([6, 18]).range([0, 1.5]);
+
+      _.mapObject(data, function(val, key) {
+        val.diff = [];
+        for (var i = 0; i < dates.length; i++) {
+          employmentPoints.position.data.push(xScale(val.laborSizes[i]), yScale(val.unemploymentRates[i]), i);
+          employmentPoints.indices.data.push(index, index+1);
+          index += 1;
+
+          //calculate diffs for color
+          if (i < dates.length-1) {
+            var curDiff = val.laborSizes[i+1] - val.laborSizes[i];
+            val.diff.push(curDiff);
+
+            if (Math.abs(curDiff) > diff) {
+              diff = Math.abs(curDiff)
+            }
+          }
+        }
+      });
+
+      //add color
+      var colorScale = d3.scale.linear()
+          .domain([-diff, 0, diff])
+          .range(['orange', 'grey', 'blue']);
+
+      _.mapObject(data, function(val, key) {
+        for (var i = 0; i < dates.length; i++) {
+          var color = colorScale(val.diff[i]);
+          employmentPoints.color.data.push(hexToR(color), hexToG(color), hexToB(color));
+        }
+      });
+
+      //add aggregate
+      employmentPoints.position.data.push(xScale(aggregate.laborSizes[0]), yScale(aggregate.unemploymentRates[0]), 0,
+          xScale(aggregate.laborSizes[1]), yScale(aggregate.unemploymentRates[1]), 1);
+      employmentPoints.indices.data.push(index, index+1);
+
+      for (var i = 0; i < dates.length; i++) {
+        employmentPoints.color.data.push(1, 0, 0)
+      }
+
+      employmentBufferInfo = twgl.createBufferInfoFromArrays(gl, employmentPoints);
+      console.log(employmentPoints);
+      console.log(employmentBufferInfo);
+      pointsLoaded = true;
+    });
+
     d3.csv("data/output2.csv", function(err, data) {
       if (err) {
         console.log(err);
@@ -232,10 +326,8 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
           .range([0, 1.5]);
 
       data.forEach(function(item) {
-        points.position.data.push(x1(+item.startweight), y1(+item.startvalue), 0, x2(+item.endweight), y2(+item.endvalue), 1);
-        points.indices.data.push(i++, i++);
-        //TODO: Change start and end color like comet
-        //points.color.data.push(1, 0.6, 0, 1, 0.3, 0);
+        weightValuePoints.position.data.push(x1(+item.startweight), y1(+item.startvalue), 0, x2(+item.endweight), y2(+item.endvalue), 1);
+        weightValuePoints.indices.data.push(i++, i++);
 
         // calculate aggregate line
         sizeSum = [sizeSum[0] + +item.startweight, sizeSum[1] + +item.endweight];
@@ -248,23 +340,6 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
         }
       });
 
-      //functions to convert hex to rgb values
-      function hexToR(h) {
-        return parseInt((cutHex(h)).substring(0, 2), 16) / 255;
-      }
-
-      function hexToG(h) {
-        return parseInt((cutHex(h)).substring(2, 4), 16) / 255;
-      }
-
-      function hexToB(h) {
-        return parseInt((cutHex(h)).substring(4, 6), 16) / 255;
-      }
-
-      function cutHex(h) {
-        return (h.charAt(0) == "#") ? h.substring(1, 7) : h;
-      }
-
       var colorScale = d3.scale.linear()
           .domain([-diff, 0, diff])
           .range(['orange', 'grey', 'blue']);
@@ -272,7 +347,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       //second loop to compute colors
       data.forEach(function(item) {
         var color = colorScale(item.weightDiff);
-        points.color.data.push(hexToR(color), hexToG(color), hexToB(color), hexToR(color), hexToG(color), hexToB(color));
+        weightValuePoints.color.data.push(hexToR(color), hexToG(color), hexToB(color), hexToR(color), hexToG(color), hexToB(color));
       });
 
       var aggregate = {
@@ -282,12 +357,12 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
         endweight: sizeSum[1] / data.length
       };
 
-      points.position.data.push(x1(+aggregate.startweight), y1(+aggregate.startvalue), 0, x2(+aggregate.endweight), y2(+aggregate.endvalue), 1);
-      points.indices.data.push(i++, i++);
-      points.color.data.push(1, 0, 0, 0.7, 0, 0);
+      weightValuePoints.position.data.push(x1(+aggregate.startweight), y1(+aggregate.startvalue), 0, x2(+aggregate.endweight), y2(+aggregate.endvalue), 1);
+      weightValuePoints.indices.data.push(i++, i++);
+      weightValuePoints.color.data.push(1, 0, 0, 0.7, 0, 0);
 
-      pointsLoaded = true;
-      pointsBufferInfo = twgl.createBufferInfoFromArrays(gl, points);
+      //pointsLoaded = true;
+      weightValueBufferInfo = twgl.createBufferInfoFromArrays(gl, weightValuePoints);
     });
 
     requestAnimationFrame(render);

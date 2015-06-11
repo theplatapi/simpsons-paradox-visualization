@@ -1,0 +1,31 @@
+{
+  "dates": [2000, 2013],
+  "a": {
+    "unemploymentRates": [18, 18],
+    "laborSizes": [85000, 115000]
+  },
+  "b": {
+    "unemploymentRates": [17, 17],
+    "laborSizes": [79000, 105000]
+  },
+  "c": {
+    "unemploymentRates": [14, 14],
+    "laborSizes": [90000, 105100]
+  },
+  "d": {
+    "unemploymentRates": [10, 10],
+    "laborSizes": [100000, 69500]
+  },
+  "e": {
+    "unemploymentRates": [8, 8],
+    "laborSizes": [90000, 70500]
+  },
+  "f": {
+    "unemploymentRates": [6, 6],
+    "laborSizes": [81000, 58000]
+  },
+  "aggregate": {
+    "unemploymentRates": [12.8, 11.9],
+    "laborSizes": [81000, 81000]
+  }
+}
