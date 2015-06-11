@@ -286,9 +286,6 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       });
     });
 
-    //TODO: Create a setAxisLabels function to call when switch
-    //TODO: Load the new buffer in when switch
-
     var parseEmployment = function(data, points) {
       var index = 0;
       var maxDiff = 0;

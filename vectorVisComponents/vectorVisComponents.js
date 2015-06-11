@@ -30,8 +30,6 @@ $(function() {
       item.applicants = +item.applicants;
       item.admitted = +item.admitted;
     });
-    //x.domain(d3.extent(data, function(d) { return +d.applicants; })).nice();
-    //y.domain(d3.extent(data, function(d) { return +d.admitted; })).nice();
     x.domain([0, 100]);
     y.domain([0, 100]);
 
@@ -78,9 +76,6 @@ $(function() {
       return item.gender === 'male';
     });
 
-
-
-    //TODO: Put everything below into a function and run for male
     var plotGender = function(data, color) {
       var aggregate = data.shift();
 
@@ -102,7 +97,6 @@ $(function() {
             .attr("stroke-width", 2)
             .attr("stroke", color);
         prev = cur;
-        //console.log(prev);
       }
     };
 
