@@ -72,12 +72,19 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var rotateYWithMouse = false;
     var weightValueBufferInfo = null;
     var employmentBufferInfo = null;
+    var employment2BufferInfo = null;
+    var currentLineBufferInfo = null;
     var weightValuePoints = {
       position: {numComponents: 3, data: []},
       indices: {numComponents: 2, data: []},
       color: {numComponents: 3, data: []}
     };
     var employmentPoints = {
+      position: {numComponents: 3, data: []},
+      indices: {numComponents: 2, data: []},
+      color: {numComponents: 3, data: []}
+    };
+    var employment2Points = {
       position: {numComponents: 3, data: []},
       indices: {numComponents: 2, data: []},
       color: {numComponents: 3, data: []}
@@ -116,7 +123,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var translateOver = m4.translation([0.2, 0.15, 0]);
     var xPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(rotateX, translateOver));
     var xTextTex = twgl.createTextures(gl, {
-      fromCanvas: {src: makeTextCanvas("weight", 200, 100)}
+      fromCanvas: {src: makeTextCanvas("weight", 200, 150)}
     });
 
     var translateBack = m4.translation([-0.2, 0.15, 0]);
@@ -124,17 +131,18 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
     var rotateZ = m4.rotateZ(identity, 90 * Math.PI / 180);
     var yPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateX, rotateZ), translateBack));
     var yTextTex = twgl.createTextures(gl, {
-      fromCanvas: {src: makeTextCanvas("value", 200, 100)}
+      fromCanvas: {src: makeTextCanvas("value", 200, 150)}
     });
 
     var translateForward = m4.translation([0, 0.15, 0.2]);
     var zPlaneBufferInfo = twgl.primitives.createPlaneBufferInfo(gl, 1, 1, 1, 1, m4.multiply(m4.multiply(rotateX, rotateY), translateForward));
     var zTextTex = twgl.createTextures(gl, {
-      fromCanvas: {src: makeTextCanvas("time", 200, 100)}
+      fromCanvas: {src: makeTextCanvas("time", 200, 150)}
     });
 
     var uniforms = {};
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.lineWidth(2.0);
 
     function render() {
       twgl.resizeCanvasToDisplaySize(gl.canvas);
@@ -162,13 +170,9 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
 
       if (pointsLoaded) {
         gl.useProgram(vanillaShaderInfo.program);
-        //twgl.setBuffersAndAttributes(gl, pointsShaderInfo, weightValueBufferInfo);
-        //twgl.setUniforms(pointsShaderInfo, uniforms);
-        //twgl.drawBufferInfo(gl, gl.LINES, weightValueBufferInfo);
-        twgl.setBuffersAndAttributes(gl, vanillaShaderInfo, employmentBufferInfo);
+        twgl.setBuffersAndAttributes(gl, vanillaShaderInfo, currentLineBufferInfo);
         twgl.setUniforms(vanillaShaderInfo, uniforms);
-        twgl.drawBufferInfo(gl, gl.LINES, employmentBufferInfo);
-        //gl.drawArrays(gl.POINTS, 0, 5);//employmentPoints.position.data.length
+        twgl.drawBufferInfo(gl, gl.LINES, currentLineBufferInfo);
       }
 
       //Makes text plane translucent
@@ -234,63 +238,134 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       }
     });
 
+    $("#weightData").on('click', function(event) {
+      currentLineBufferInfo = weightValueBufferInfo;
+
+      xTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("weight", 200, 150)}
+      });
+
+      yTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("value", 200, 150)}
+      });
+
+      zTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("time", 200, 150)}
+      });
+    });
+
+    $("#employmentData").on('click', function(event) {
+      currentLineBufferInfo = employmentBufferInfo;
+
+      xTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("size", 200, 150)}
+      });
+
+      yTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("jobless %", 200, 150)}
+      });
+
+      zTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("time", 200, 150)}
+      });
+    });
+
+    $("#employmentData2").on('click', function(event) {
+      currentLineBufferInfo = employment2BufferInfo;
+
+      xTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("size", 200, 150)}
+      });
+
+      yTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("jobless %", 200, 150)}
+      });
+
+      zTextTex = twgl.createTextures(gl, {
+        fromCanvas: {src: makeTextCanvas("time", 200, 150)}
+      });
+    });
+
     //TODO: Create a setAxisLabels function to call when switch
     //TODO: Load the new buffer in when switch
 
-    d3.json("data/employment.json", function(err, data) {
+    var parseEmployment = function(data, points) {
       var index = 0;
-      var diff = 0;
+      var maxDiff = 0;
       var dates = data.dates;
       var aggregate = data.aggregate;
       delete data.dates;
       delete data.aggregate;
-      var xScale = d3.scale.linear().domain([58000, 115000]).range([0, 1.5]);
-      var yScale = d3.scale.linear().domain([6, 18]).range([0, 1.5]);
+      var xScale = d3.scale.linear().domain([58000, 115000]).range([0, 1.5]).nice();
+      var yScale = d3.scale.linear().domain([6, 18]).range([0, 1.5]).nice();
 
       _.mapObject(data, function(val, key) {
         val.diff = [];
         for (var i = 0; i < dates.length; i++) {
-          employmentPoints.position.data.push(xScale(val.laborSizes[i]), yScale(val.unemploymentRates[i]), i);
-          employmentPoints.indices.data.push(index, index+1);
-          index += 1;
+          points.position.data.push(xScale(val.laborSizes[i]), yScale(val.unemploymentRates[i]), i/2);
 
-          //calculate diffs for color
           if (i < dates.length-1) {
+            points.indices.data.push(index+i, index+i+1);
+
+            //calculate diffs for color
             var curDiff = val.laborSizes[i+1] - val.laborSizes[i];
             val.diff.push(curDiff);
 
-            if (Math.abs(curDiff) > diff) {
-              diff = Math.abs(curDiff)
+            if (Math.abs(curDiff) > maxDiff) {
+              maxDiff = Math.abs(curDiff)
             }
           }
         }
+        index += dates.length;
       });
 
       //add color
       var colorScale = d3.scale.linear()
-          .domain([-diff, 0, diff])
+          .domain([-maxDiff, 0, maxDiff])
           .range(['orange', 'grey', 'blue']);
 
       _.mapObject(data, function(val, key) {
-        for (var i = 0; i < dates.length; i++) {
-          var color = colorScale(val.diff[i]);
-          employmentPoints.color.data.push(hexToR(color), hexToG(color), hexToB(color));
+        var color;
+        for (var i = 0; i < val.diff.length; i++) {
+          color = colorScale(val.diff[i]);
+
+          points.color.data.push(hexToR(color), hexToG(color), hexToB(color));
         }
+        points.color.data.push(hexToR(color), hexToG(color), hexToB(color));
       });
 
       //add aggregate
-      employmentPoints.position.data.push(xScale(aggregate.laborSizes[0]), yScale(aggregate.unemploymentRates[0]), 0,
-          xScale(aggregate.laborSizes[1]), yScale(aggregate.unemploymentRates[1]), 1);
-      employmentPoints.indices.data.push(index, index+1);
-
       for (var i = 0; i < dates.length; i++) {
-        employmentPoints.color.data.push(1, 0, 0)
+        points.position.data.push(xScale(aggregate.laborSizes[i]), yScale(aggregate.unemploymentRates[i]), i/2);
+
+        if (i < dates.length - 1) {
+          points.indices.data.push(index+i, index+i+1);
+          points.color.data.push(1, 0, 0);
+        }
+        points.color.data.push(1, 0, 0);
       }
 
-      employmentBufferInfo = twgl.createBufferInfoFromArrays(gl, employmentPoints);
-      console.log(employmentPoints);
-      console.log(employmentBufferInfo);
-      pointsLoaded = true;
+      return twgl.createBufferInfoFromArrays(gl, points);
+    };
+
+    d3.json("data/employment.json", function(err, data) {
+      if (!err) {
+        employmentBufferInfo = parseEmployment(data, employmentPoints);
+        pointsLoaded = true;
+      }
+      else {
+        console.log(err);
+      }
+    });
+
+    d3.json("data/employment2.json", function(err, data) {
+      if (!err) {
+        employment2BufferInfo = parseEmployment(data, employment2Points);
+        pointsLoaded = true;
+      }
+      else {
+        console.log(err);
+      }
     });
 
     d3.csv("data/output2.csv", function(err, data) {
@@ -336,7 +411,7 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
         //calculate diff for color
         item.weightDiff = +item.endweight - +item.startweight;
         if (Math.abs(item.weightDiff) > diff) {
-          diff = Math.abs(item.weightDiff)
+          diff = Math.abs(item.weightDiff);
         }
       });
 
@@ -361,8 +436,10 @@ $.getScripts(shaders, 'cometChart3D/shaders/').done(function(axesVs, axesFs, poi
       weightValuePoints.indices.data.push(i++, i++);
       weightValuePoints.color.data.push(1, 0, 0, 0.7, 0, 0);
 
-      //pointsLoaded = true;
+
       weightValueBufferInfo = twgl.createBufferInfoFromArrays(gl, weightValuePoints);
+      currentLineBufferInfo = weightValueBufferInfo;
+      pointsLoaded = true;
     });
 
     requestAnimationFrame(render);
