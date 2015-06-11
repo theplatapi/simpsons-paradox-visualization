@@ -23,7 +23,8 @@
     "jquery": "~2.1.4",
     "d3": "~3.5.5",
     "twgl.js": "~0.0.21",
-    "bootstrap": "~3.3.4"
+    "bootstrap": "~3.3.4",
+    "underscore": "~1.8.3"
   },
   "overrides": {
     "d3": {
@@ -31,6 +32,9 @@
     },
     "jquery": {
       "main": "dist/jquery.min.js"
+    },
+    "underscore": {
+      "main": "underscore-min.js"
     }
   }
 }
