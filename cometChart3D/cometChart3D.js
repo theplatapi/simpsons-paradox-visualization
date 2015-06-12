@@ -1,11 +1,3 @@
-/*
- * TODO:
- * Change data set with dropdown
- * Axis ticks
- * Add an extra time step to data
- * Change background
- */
-
 //functions to convert hex to rgb values
 function hexToR(h) {
   return parseInt((cutHex(h)).substring(0, 2), 16) / 255;
