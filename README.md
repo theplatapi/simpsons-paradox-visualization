@@ -1,6 +1,6 @@
 #Simpson's paradox
 ##Description
- This project is an attempt to improve visualizing if data is subject to Simpson's paradox.
+This project is an attempt to improve visualizing if data is subject to Simpson's paradox.
 
 Simpson's paradox occurs when grouped data has an opposite trend from the total aggregate. This occurs when
 there's a lurking variable present, like data weights. Most visualizations fail to show data values and their
@@ -27,7 +27,7 @@ and holding the `y` key allows tilting up and down as well.
 
 Clicking the data set drop down toggles which data is being viewed. The second and third data sets are unemployment
 data for different market segments. The sharp color and position difference signals that the market segment weights
-- the market size in this case - are changing and can skew aggregate results.
+--- the market size in this case --- are changing and can skew aggregate results.
 
 The 3D comet chart is made with WebGL. It's essentially three components, each with a separate shader. The axes
 are the first component; they are simply a few vertices with indices connecting them into the familiar 3D cartesian
@@ -45,7 +45,7 @@ still rejected more overall.
 
 The Vector Visualization colors lines pink or blue according to if more women or men were admitted to a department.
 The large line is the aggregate however, so overall most departments admitted more women. The components was an attempt
-to replicate <a href="data/simpson_paradox.jpg">this</a> image but with multiple categories instead of just two.
+to replicate [this](data/simpson_paradox.jpg) image but with multiple categories instead of just two.
 Lining up the vectors head to tail however didn't produce an interesting visualization.
 
 This project allowed me to cultivate a good software development base for future WebGL work. I learned how to use
@@ -58,8 +58,8 @@ unruly as more and more get added. Most importantly for me, I lose syntax highli
 
 ##Resources
 
-The idea for this project comes from the paper <a href="http://research.google.com/pubs/pub42901.html">
-Visualizing Statistical Mix Effects and Simpson's Paradox</a> which pioneered the comet chart, along with formalizing
+The idea for this project comes from the paper [Visualizing Statistical Mix Effects and Simpson's Paradox]
+(http://research.google.com/pubs/pub42901.html) which pioneered the comet chart, along with formalizing
 the issue and giving ideas about future work.
 
 I use [twgl](http://twgljs.org/) as a thin wrapper around WebGL. It makes the API less verbose and
